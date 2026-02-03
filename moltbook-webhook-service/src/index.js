@@ -5,16 +5,15 @@
  */
 
 const express = require('express');
-const crypto = require('crypto');
+const { MoltbookPoller } = require('./poller');
+const { WebhookDeliverer } = require('./deliverer');
 
 const app = express();
 app.use(express.json());
 
-// In-memory storage for now (use Redis in production)
-const subscriptions = new Map();
-const lastSeen = new Map();
+const poller = new MoltbookPoller();
+const deliverer = new WebhookDeliverer();
 
-const MOLTBOOK_API = 'https://www.moltbook.com/api/v1';
 const POLL_INTERVAL = 30000; // 30 seconds
 
 /**
@@ -29,13 +28,15 @@ app.post('/webhooks/subscribe', (req, res) => {
     });
   }
   
-  subscriptions.set(agent_id, {
+  const subscription = {
     api_key,
     url,
     events: new Set(events),
     secret: secret || null,
     created: Date.now()
-  });
+  };
+  
+  poller.subscribe(agent_id, subscription);
   
   console.log(`✓ Subscribed ${agent_id} to ${events.join(', ')}`);
   
@@ -53,106 +54,57 @@ app.post('/webhooks/subscribe', (req, res) => {
 app.delete('/webhooks/subscribe/:agent_id', (req, res) => {
   const { agent_id } = req.params;
   
-  if (subscriptions.has(agent_id)) {
-    subscriptions.delete(agent_id);
-    lastSeen.delete(agent_id);
-    
-    res.json({ success: true, message: 'Subscription removed' });
-  } else {
-    res.status(404).json({ error: 'Subscription not found' });
-  }
+  poller.unsubscribe(agent_id);
+  
+  res.json({ success: true, message: 'Subscription removed' });
 });
 
 /**
  * List subscriptions (for debugging)
  */
 app.get('/webhooks/subscriptions', (req, res) => {
-  const subs = Array.from(subscriptions.entries()).map(([agent_id, sub]) => ({
-    agent_id,
-    url: sub.url,
-    events: Array.from(sub.events),
-    created: sub.created
-  }));
-  
-  res.json({ subscriptions: subs });
+  res.json({ 
+    count: poller.getSubscriptionCount(),
+    message: 'Use admin endpoint for details'
+  });
 });
 
 /**
  * Poll Moltbook for updates and deliver webhooks
  */
 async function pollAndDeliver() {
-  console.log(`Polling Moltbook for ${subscriptions.size} subscriptions...`);
+  const count = poller.getSubscriptionCount();
+  if (count === 0) return;
   
-  for (const [agent_id, sub] of subscriptions) {
-    try {
-      await checkAgent(agent_id, sub);
-    } catch (error) {
-      console.error(`Error checking ${agent_id}:`, error.message);
-    }
-  }
-}
-
-/**
- * Check a specific agent's notifications
- */
-async function checkAgent(agent_id, sub) {
-  // Get agent's posts to check for new comments
-  const response = await fetch(`${MOLTBOOK_API}/agents/me`, {
-    headers: { 'Authorization': `Bearer ${sub.api_key}` }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  
-  // In a real implementation, we'd:
-  // 1. Fetch agent's posts
-  // 2. Check for new comments since lastSeen
-  // 3. Check for mentions
-  // 4. Deliver relevant webhooks
-  
-  // For now, just a placeholder
-  console.log(`Checked ${agent_id} - ${data.agent?.name}`);
-}
-
-/**
- * Deliver a webhook to an agent
- */
-async function deliverWebhook(sub, event, data) {
-  const payload = {
-    event,
-    timestamp: new Date().toISOString(),
-    data
-  };
-  
-  // Sign payload if secret provided
-  let signature = null;
-  if (sub.secret) {
-    signature = crypto
-      .createHmac('sha256', sub.secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-  }
+  console.log(`[${new Date().toISOString()}] Polling ${count} subscription(s)...`);
   
   try {
-    const response = await fetch(sub.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(signature && { 'X-Moltbook-Signature': signature })
-      },
-      body: JSON.stringify(payload)
-    });
+    const events = await poller.pollAll();
     
-    if (!response.ok) {
-      console.error(`Webhook delivery failed: ${response.status}`);
-      // TODO: Implement retry with exponential backoff
+    if (events.length > 0) {
+      console.log(`  Found ${events.length} event(s)`);
+      
+      // Group events by agent
+      const eventsByAgent = new Map();
+      for (const evt of events) {
+        if (!eventsByAgent.has(evt.agentId)) {
+          eventsByAgent.set(evt.agentId, []);
+        }
+        eventsByAgent.get(evt.agentId).push(evt);
+      }
+      
+      // Deliver to each agent
+      for (const [agentId, agentEvents] of eventsByAgent) {
+        const subscription = poller.subscriptions.get(agentId);
+        if (!subscription) continue;
+        
+        for (const evt of agentEvents) {
+          await deliverer.deliver(subscription, evt.event, evt.data);
+        }
+      }
     }
   } catch (error) {
-    console.error('Webhook delivery error:', error.message);
-    // TODO: Implement retry
+    console.error('Polling error:', error.message);
   }
 }
 
@@ -162,8 +114,9 @@ async function deliverWebhook(sub, event, data) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    subscriptions: subscriptions.size,
-    uptime: process.uptime()
+    subscriptions: poller.getSubscriptionCount(),
+    uptime: process.uptime(),
+    poll_interval_ms: POLL_INTERVAL
   });
 });
 
