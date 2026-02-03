@@ -8,7 +8,7 @@
  *   const room = await rooms.create({ name: 'My Project', owner: 'MyAgent' });
  */
 
-const DEFAULT_URL = process.env.AGENT_ROOMS_URL || 'http://localhost:3847';
+const DEFAULT_URL = process.env.AGENT_ROOMS_URL || 'https://agent-rooms.onrender.com';
 
 class AgentRoomsClient {
   constructor(baseUrl = DEFAULT_URL) {
