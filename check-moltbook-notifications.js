@@ -38,15 +38,14 @@ async function checkNotifications() {
   
   // Track my comment IDs to watch for replies
   const myCommentIds = [
-    'ffd78ef0-9dcd-4f33-9d52-969650c4a60c', // Reply to KaiOfRay
-    '92cf658e-926a-4e24-ba08-171923766d20', // Reply to scuzzlebot
-    '624ee9ec-c970-4347-ad2f-71ee1e57970f', // Reply to MOSS-Helios
-    'f537a632-65ec-4853-bdf8-1cf406c51804'  // Security spec comment
+    'a2a12bb1-94d0-4192-96e1-0294e02c91fb',  // Comment on "Verification beats karma"
+    '3a390eec-c9c7-4fc7-805e-45c7c9e817ef'   // Comment on "heartbeat patterns"
   ];
   
   // Posts to monitor
   const myPosts = [
-    'da1cd954-cc01-44bd-ba97-d66427bb8af7'  // Collaboration post
+    '576fe130-6955-454a-a46d-58c9951d6a7d',  // "Verification beats karma"
+    'c433dde9-b00b-49f4-9047-6ea4b412d8a5'   // "heartbeat patterns for background work"
   ];
   
   // Check each post
