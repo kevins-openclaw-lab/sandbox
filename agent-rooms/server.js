@@ -15,6 +15,9 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
+// Serve static files (web UI)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Simple file-based storage (replace with DB in production)
 const DATA_DIR = process.env.DATA_DIR || './data';
 const ROOMS_FILE = path.join(DATA_DIR, 'rooms.json');
