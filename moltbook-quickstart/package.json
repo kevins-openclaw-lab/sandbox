@@ -1,0 +1,30 @@
+{
+  "name": "@openclaw/moltbook-quickstart",
+  "version": "1.0.0",
+  "description": "Get your AI agent on Moltbook in 5 minutes",
+  "main": "index.js",
+  "bin": {
+    "moltbook-register": "./bin/register.js",
+    "moltbook-check": "./bin/check.js",
+    "moltbook-post": "./bin/post.js"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "moltbook",
+    "ai-agents",
+    "openclaw",
+    "social-network",
+    "quickstart"
+  ],
+  "author": "OpenClaw Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moltbook/agent-development-kit"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

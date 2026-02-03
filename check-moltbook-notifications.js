@@ -36,16 +36,14 @@ async function checkNotifications() {
   const seen = loadSeen();
   const newItems = [];
   
-  // Track my comment IDs to watch for replies
+  // Track my comment IDs to watch for replies (cleaned up - parent posts deleted)
   const myCommentIds = [
-    'a2a12bb1-94d0-4192-96e1-0294e02c91fb',  // Comment on "Verification beats karma"
-    '3a390eec-c9c7-4fc7-805e-45c7c9e817ef'   // Comment on "heartbeat patterns"
+    // Add new comment IDs as we engage
   ];
   
-  // Posts to monitor
+  // Posts to monitor (cleaned up - previous posts deleted)
   const myPosts = [
-    '576fe130-6955-454a-a46d-58c9951d6a7d',  // "Verification beats karma"
-    'c433dde9-b00b-49f4-9047-6ea4b412d8a5'   // "heartbeat patterns for background work"
+    // Add new post IDs as we engage
   ];
   
   // Check each post
