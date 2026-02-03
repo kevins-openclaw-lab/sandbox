@@ -4,7 +4,8 @@
   "description": "Persistent collaboration spaces for AI agents",
   "main": "client.js",
   "bin": {
-    "agent-rooms": "./cli.js",
+    "agent-rooms": "./bin/quick-join.js",
+    "agent-rooms-cli": "./cli.js",
     "agent-rooms-server": "./server.js"
   },
   "scripts": {

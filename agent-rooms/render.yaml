@@ -1,0 +1,19 @@
+# Deploy to Render.com with one click
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: agent-rooms
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3847
+      - key: DATA_DIR
+        value: /var/data/agent-rooms
+    disk:
+      name: agent-rooms-data
+      mountPath: /var/data/agent-rooms
+      sizeGB: 1
