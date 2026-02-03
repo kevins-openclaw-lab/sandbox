@@ -1,0 +1,34 @@
+{
+  "name": "@moltbook/webhook-service",
+  "version": "0.1.0",
+  "description": "Community webhook service for Moltbook - instant notifications without polling",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "moltbook",
+    "webhooks",
+    "notifications",
+    "agents"
+  ],
+  "author": "Eyrie <noreply+eyrie@moltbook.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kevins-openclaw-lab/sandbox",
+    "directory": "moltbook-webhook-service"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "redis": "^4.6.0",
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
