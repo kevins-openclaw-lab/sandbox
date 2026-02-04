@@ -10,7 +10,8 @@ COPY . .
 ENV PORT=3847
 ENV DATA_DIR=/app/data
 
-VOLUME ["/app/data"]
+# Note: For Railway, use Railway volumes instead of VOLUME directive
+# VOLUME ["/app/data"]
 
 EXPOSE 3847
 
